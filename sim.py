@@ -28,9 +28,46 @@ class AGC(pygame.sprite.Sprite):
         self.rect = newpos
         
         test = f"(X,Y): ({self.rect.x},{self.rect.y})"
-        print(test)
+        # print(test)
+
+class Map():
+    def __init__(self):
+        self.nodes = []
+
+    def add_nodes(self, node):
+        self.nodes.append(node)
+
+    def draw_map(self):
+        pass
         
-      
+
+class Node():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.neighbors = []
+
+    def add_neighbors(self, node):
+        self.neighbors.append(node)
+
+
+class Circle(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, radius = 25):
+        pygame.sprite.Sprite.__init__(self)
+        self.x = x
+        self.y = y
+        self.image = pygame.Surface((radius*2, radius*2))
+        self.image.fill((0,0,255))
+        pygame.draw.circle(self.image, (255,255,255), (radius, radius), radius)
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
+        
+    def update(self):
+         pass
+
+
 
 def load_image(name):
     fullname = os.path.join("assets", name)
@@ -58,9 +95,20 @@ def sim():
 
     agc = AGC(100, 50)
 
-    allsprites = pygame.sprite.RenderPlain(agc)
+
+
+    circles = pygame.sprite.RenderPlain()
+
+    for x in range(0, 1000, 100):
+        # temp.append(Circle(x,100))
+        circles.add(Circle(x,100))
+        print("added : ", str(x))
+
+    all_agc = pygame.sprite.RenderPlain((agc, AGC(300,50), AGC(500,50)))
 
     clock = pygame.time.Clock()
+
+    print(circles)
 
     while True:
         clock.tick(60)
@@ -71,10 +119,13 @@ def sim():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return
             
-        allsprites.update()
+
+        circles.update()
+        all_agc.update()
 
         screen.blit(background, (0,0))
-        allsprites.draw(screen)
+        circles.draw(screen)
+        all_agc.draw(screen)
         pygame.display.flip()
 
 
