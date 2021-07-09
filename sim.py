@@ -27,8 +27,6 @@ class AGC(pygame.sprite.Sprite):
                 newpos = self.rect.move((0,self.speed))
         self.rect = newpos
         
-        test = f"(X,Y): ({self.rect.x},{self.rect.y})"
-        # print(test)
 
 class Map():
     def __init__(self):
@@ -67,6 +65,31 @@ class Circle(pygame.sprite.Sprite):
     def update(self):
          pass
 
+class Line(pygame.sprite.Sprite):
+    def __init__(self, start,end):
+        pygame.sprite.Sprite.__init__(self)
+
+        end_y =  end[1]
+
+        self.width = 2
+        self.length = self.get_length(start, end)
+
+        self.image =  pygame.Surface((self.length,self.width))
+        self.image.fill((255,255,255))
+        pygame.draw.line(self.image, (255,255,255), (0,0), (0,end_y), self.width)
+        self.rect = self.image.get_rect()
+        x,y = start
+        self.rect.centerx = x + self.length/2
+        self.rect.centery = y + self.length/2
+
+    def update(self):
+        pass
+
+    def get_length(self,start, end):
+        x1, y1 = start
+        x2, y2 = end
+
+        return math.sqrt(pow((x2-x1),2) + pow((y2-y1),2))
 
 
 def load_image(name):
@@ -93,22 +116,39 @@ def sim():
     screen.blit(background, (0,0))
     pygame.display.flip()
 
+    
+    ########### AGC Set Up ####################
     agc = AGC(100, 50)
-
-
-
-    circles = pygame.sprite.RenderPlain()
-
-    for x in range(0, 1000, 100):
-        # temp.append(Circle(x,100))
-        circles.add(Circle(x,100))
-        print("added : ", str(x))
-
     all_agc = pygame.sprite.RenderPlain((agc, AGC(300,50), AGC(500,50)))
 
-    clock = pygame.time.Clock()
+    ########### Circle Set Up ################
+    circles = pygame.sprite.RenderPlain()
 
-    print(circles)
+    circle_1 = Circle(200,200)
+    circle_2 = Circle(200,500)
+    circle_3 = Circle(500,500)
+    circle_4 = Circle(500,200)
+
+    circles.add(circle_1)
+    circles.add(circle_2)
+    circles.add(circle_3)
+    circles.add(circle_4)
+
+    ########### Line Set Up ####################
+
+    lines = pygame.sprite.RenderPlain()
+
+    line_1 = Line(circle_1.rect.center, circle_2.rect.center)
+    line_2 = Line(circle_2.rect.center, circle_3.rect.center)
+    line_3 = Line(circle_3.rect.center, circle_4.rect.center)
+    line_4 = Line(circle_4.rect.center, circle_1.rect.center)
+
+    lines.add(line_1)
+    lines.add(line_2)
+    lines.add(line_3)
+    lines.add(line_4)
+    
+    clock = pygame.time.Clock()
 
     while True:
         clock.tick(60)
@@ -119,13 +159,17 @@ def sim():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return
             
-
+        lines.update()
         circles.update()
         all_agc.update()
 
+        
+
         screen.blit(background, (0,0))
+        lines.draw(screen)
         circles.draw(screen)
         all_agc.draw(screen)
+        pygame.draw.line(screen, (22,255,255), (200,200), (200,500), 2)
         pygame.display.flip()
 
 
