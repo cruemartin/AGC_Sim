@@ -2,6 +2,12 @@ import os
 import pygame
 import math
 
+WHITE = (255,255,255)
+BLACK = (0,0,0)
+BLUE = (0,0,255)
+GREEN = (0,255,0)
+RED = (255,0,0)
+
 class AGC(pygame.sprite.Sprite):
     """An Agc cart object, move around points on the screen"""
     
@@ -29,67 +35,46 @@ class AGC(pygame.sprite.Sprite):
         
 
 class Map():
-    def __init__(self):
+    def __init__(self, screen):
         self.nodes = []
+        self.screen = screen
 
     def add_nodes(self, node):
         self.nodes.append(node)
 
     def draw_map(self):
-        pass
-        
+        for node in self.nodes:
+            node.draw()
+
+        self.draw_lines()
+
+    
+    def draw_lines(self):
+
+        for node in self.nodes:
+            start = node.x, node.y
+            
+            for neighbor in node.neighbors:
+                end =  neighbor.x, neighbor.y
+                pygame.draw.line(self.screen, WHITE, start, end, width=2)
 
 class Node():
-    def __init__(self, x, y):
+    def __init__(self, x, y, screen, radius = 10):
         self.x = x
         self.y = y
+        self.radius = radius
         self.neighbors = []
+        self.screen = screen
+        self.rect = None
 
     def add_neighbors(self, node):
         self.neighbors.append(node)
 
+    def draw(self):
+        temp_rect = pygame.draw.circle(self.screen, WHITE, (self.x,self.y), self.radius)
+        if not self.rect:
+            self.rect = temp_rect
 
-class Circle(pygame.sprite.Sprite):
-
-    def __init__(self, x, y, radius = 25):
-        pygame.sprite.Sprite.__init__(self)
-        self.x = x
-        self.y = y
-        self.image = pygame.Surface((radius*2, radius*2))
-        self.image.fill((0,0,255))
-        pygame.draw.circle(self.image, (255,255,255), (radius, radius), radius)
-        self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
-        
-    def update(self):
-         pass
-
-class Line(pygame.sprite.Sprite):
-    def __init__(self, start,end):
-        pygame.sprite.Sprite.__init__(self)
-
-        end_y =  end[1]
-
-        self.width = 2
-        self.length = self.get_length(start, end)
-
-        self.image =  pygame.Surface((self.length,self.width))
-        self.image.fill((255,255,255))
-        pygame.draw.line(self.image, (255,255,255), (0,0), (0,end_y), self.width)
-        self.rect = self.image.get_rect()
-        x,y = start
-        self.rect.centerx = x + self.length/2
-        self.rect.centery = y + self.length/2
-
-    def update(self):
-        pass
-
-    def get_length(self,start, end):
-        x1, y1 = start
-        x2, y2 = end
-
-        return math.sqrt(pow((x2-x1),2) + pow((y2-y1),2))
 
 
 def load_image(name):
@@ -119,35 +104,32 @@ def sim():
     
     ########### AGC Set Up ####################
     agc = AGC(100, 50)
-    all_agc = pygame.sprite.RenderPlain((agc, AGC(300,50), AGC(500,50)))
+    all_agc = pygame.sprite.RenderPlain((agc))
 
     ########### Circle Set Up ################
-    circles = pygame.sprite.RenderPlain()
 
-    circle_1 = Circle(200,200)
-    circle_2 = Circle(200,500)
-    circle_3 = Circle(500,500)
-    circle_4 = Circle(500,200)
+    my_map = Map(screen)
 
-    circles.add(circle_1)
-    circles.add(circle_2)
-    circles.add(circle_3)
-    circles.add(circle_4)
+    node_1 = Node(200,200,screen)
+    node_2 = Node(200,500,screen)
+    node_3 = Node(500,500,screen)
+    node_4 = Node(500,200,screen)
+
+    node_1.add_neighbors(node_2)
+    node_2.add_neighbors(node_3)
+    node_3.add_neighbors(node_4)
+    node_4.add_neighbors(node_1)
+    node_4.add_neighbors(node_2)
+
+    my_map.add_nodes(node_1)
+    my_map.add_nodes(node_2)
+    my_map.add_nodes(node_3)
+    my_map.add_nodes(node_4)
+
 
     ########### Line Set Up ####################
 
-    lines = pygame.sprite.RenderPlain()
-
-    line_1 = Line(circle_1.rect.center, circle_2.rect.center)
-    line_2 = Line(circle_2.rect.center, circle_3.rect.center)
-    line_3 = Line(circle_3.rect.center, circle_4.rect.center)
-    line_4 = Line(circle_4.rect.center, circle_1.rect.center)
-
-    lines.add(line_1)
-    lines.add(line_2)
-    lines.add(line_3)
-    lines.add(line_4)
-    
+   
     clock = pygame.time.Clock()
 
     while True:
@@ -159,18 +141,21 @@ def sim():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return
             
-        lines.update()
-        circles.update()
+        # lines.update()
         all_agc.update()
 
         
 
         screen.blit(background, (0,0))
-        lines.draw(screen)
-        circles.draw(screen)
+        # lines.draw(screen)
+        
+        my_map.draw_map()
+
         all_agc.draw(screen)
-        pygame.draw.line(screen, (22,255,255), (200,200), (200,500), 2)
+        # pygame.draw.line(screen, (22,255,255), (200,200), (200,500), 2)
         pygame.display.flip()
+
+        
 
 
 if __name__ == "__main__":
