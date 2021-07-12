@@ -19,6 +19,8 @@ class AGC(pygame.sprite.Sprite):
         self.rect.x = X
         self.rect.y = Y
         self.speed = 1
+        self.move_x = 0 
+        self.move_y = 1 
 
 
     def update(self):
@@ -26,12 +28,58 @@ class AGC(pygame.sprite.Sprite):
 
     def _drive(self):
         """Move the agc up and down changing dircetion if it will go off screen"""
-        newpos = self.rect.move((0,self.speed))
+
+        # newpos = self.rect.move((0,self.speed))
+        newpos = self.rect.move((self.move_x, self.move_y))
+
+        if newpos.y % 100 == 0 and newpos.x % 100 != 0:
+            print("y= " + str(newpos.y) + "move down")
+            self.move_y = 0
+            self.move_x = 1
+
+        elif newpos.x % 100 == 0 and newpos.y % 100 != 0:
+
+            print("x= " + str(newpos.x) + "move down")
+            self.move_y = 1
+            self.move_x = 0
+
         if not self.area.contains(newpos):
-            if self.rect.top < self.area.top or self.rect.bottom > self.area.bottom:
-                self.speed = -self.speed
-                newpos = self.rect.move((0,self.speed))
+            self.speed = -self.speed
+            newpos = self.rect.move((0,self.speed))
         self.rect = newpos
+
+class AGV():
+    """A class for the agv cart object, this is a class i am rolling with out the use if the sprite parent class"""
+    
+    def __init__(self, X, Y, screen):
+        self.x = X
+        self.y = Y
+        self.screen = screen
+        self.rect =  None
+        self.speed = 1  
+
+        self.right = True
+
+        # self.rect = Rect(self.x, self.y, 50,100)
+
+
+
+    # def draw(self):
+
+    #     if self.right:
+    #         self.drive_right()
+
+    #     temp_rect = pygame.draw.rect(self.screen, GREEN, (self.x, self.y, 100,50))
+
+    #     if not self.rect :
+    #         self.rect = temp_rect
+
+    # def drive_left(self):
+    #     pass
+    
+    # def drive_right(self):
+    #     self.x += self.speed
+
         
 
 class Map():
@@ -103,8 +151,10 @@ def sim():
 
     
     ########### AGC Set Up ####################
-    agc = AGC(100, 50)
+    agc = AGC(101, 101)
     all_agc = pygame.sprite.RenderPlain((agc))
+
+    agv = AGV(300,100,screen)
 
     ########### Circle Set Up ################
 
@@ -125,7 +175,6 @@ def sim():
     my_map.add_nodes(node_2)
     my_map.add_nodes(node_3)
     my_map.add_nodes(node_4)
-
 
     ########### Line Set Up ####################
 
@@ -150,6 +199,8 @@ def sim():
         # lines.draw(screen)
         
         my_map.draw_map()
+
+        # agv.draw()
 
         all_agc.draw(screen)
         # pygame.draw.line(screen, (22,255,255), (200,200), (200,500), 2)
